@@ -1,36 +1,38 @@
 /*
  * Originally from:  https://github.com/hijonathan/google-scripts/blob/master/gmail-no-response.js
  *
- * This script goes through your Gmail Inbox looking for emails labeled as SCHEDULER_AWAITINGRESPONSE_LABEL + "/" + time indicator.  Examples:
- * No Response/7d
- * No Response/1m
- * No Response/1y
+ * This script goes through your Gmail Inbox looking for emails labeled as SCHEDULER_NORESPONSE_LABEL + "/" + time indicator.  Examples:
+ * No Response/in 7 days
+ * No Response/1 month
+ * No Response/after 2 days
  * The time periods should be nested under the main label.
  *
- * Emails found with no response by the indicated time period will be 1) labeled with the SCHEDULER_AWAITINGRESPONSE_LABEL value, marked unread, and moved to the inbox.
+ * Emails found with no response by the indicated time period will be 1) labeled with the SCHEDULER_NORESPONSE_LABEL value, timer label removed, marked unread, and moved to the inbox.
  *
  */
 
 function processUnresponded(event) {
 
-    var timerLabels = [],
+    var timerLabelNames = [],
         lastRun;
 
     if (event != undefined) { // new run   
         lastRun = handleTriggered(event.triggerUid);
-        timerLabels = [ lastRun.label ];
-        Logger.log("Continuation run of label: " + lastRun.label + " - before epoch: " + lastRun.epoch);
+        timerLabelNames = [ lastRun.labelName ];
+        Logger.log("Continuation run of label: " + lastRun.labelName + " - before epoch: " + lastRun.epoch);
     } 
     else {
         // skip labels marked as error
-        timerLabels = getUserChildLabelNames(SCHEDULER_TIMER_LABEL).remove(new RegExp("^"+TIMER_ERROR_PREFIX));
+        timerLabelNames = getUserChildLabelNames(SCHEDULER_NORESPONSE_LABEL).remove(new RegExp("\/"+TIMER_ERROR_PREFIX));
     }
 
-    for each(var label in timerLabels) {
+    for each(var timerLabelName in timerLabelNames) {
+
+        Logger.log('Processing label: ' + timerLabelName);
 
         // Define all the filters.
         var filters = [
-            '(label:' + SCHEDULER_AWAITINGRESPONSE_LABEL + ' AND label:' + label + ')',
+            'label:' + timerLabelName,
             'is:sent',
             'from:me',
             '-in:chats',
@@ -45,7 +47,7 @@ function processUnresponded(event) {
             threadMessages = GmailApp.getMessagesForThreads(threads),
             unrespondedThreads = [];
 
-        var timerSugar = label.split(/\//).pop();
+        var timerSugar = timerLabelName.split(/\//).pop();
       
         try {            
 
@@ -75,7 +77,7 @@ function processUnresponded(event) {
             });
 
             // Mark unresponded in bulk.
-            markUnresponded(unrespondedThreads);
+            markUnresponded(unrespondedThreads, timerLabelName);
             Logger.log('Updated ' + unrespondedThreads.length + ' messages.');
 
             // Resume again in RESUME_FREQUENCY minutes if max results returned (so we can come back later and get more)
@@ -86,24 +88,30 @@ function processUnresponded(event) {
                     .timeBased()
                     .at(new Date((new Date()).getTime() + 1000 * 60 * RESUME_FREQUENCY))
                     .create();
-                setupTriggerArguments(trigger, { "label": label, "epoch": lastThreadLastMessageEpoch }, false);
+                setupTriggerArguments(trigger, { "labelName": timerLabelName, "epoch": lastThreadLastMessageEpoch }, false);
             }
 
         } catch (ex) {
+
             console.error(ex);
-            Logger.log('Notify user and renaming label with error: ' + label);
+            Logger.log('Notify user and renaming label with error: ' + timerLabelName);
+
             GmailApp.sendEmail(getActiveUserEmail(), SCHEDULER_LABEL, ex);                      
-            var errLabel = label.replace(timerSugar, TIMER_ERROR_PREFIX+timerSugar)
+
             // can't actually rename a label so we have to add the new one and delete the old one from the threads
-            getLabel(errLabel).addToThreads(threads);
-            var labelObj = getLabel(label);
-            labelObj.removeFromThreads(threads);
+            var errLabelName = timerLabelName.replace(timerSugar, TIMER_ERROR_PREFIX + timerSugar)
+
+            getLabel(errLabelName).addToThreads(threads);
+            var timerLabel = getLabel(timerLabelName);
+            timerLabel.removeFromThreads(threads);
+
             // mark them unread so they'll stand out
             GmailApp.markThreadsUnread(threads);    
+
             // if there are no more messages with the bad label, go ahead and delete it for cleanup
-            if (labelObj.getThreads(0, 1).length == 0) {
-                Logger.log('Deleting label: ' + label);
-                labelObj.deleteLabel();
+            if (timerLabel.getThreads(0, 1).length == 0) {
+                Logger.log('Deleting label: ' + timerLabelName);
+                timerLabel.deleteLabel();
             }          
         }
 
@@ -138,9 +146,9 @@ function getEmailAddresses() {
     return this.emails;
 }
 
-function markUnresponded(threads) {
+function markUnresponded(threads, timerLabelName) {
+    var timerLabel = getLabel(timerLabelName);
     var noResponselabel = getLabel(SCHEDULER_NORESPONSE_LABEL);
-    var awaitingResponselabel = getLabel(SCHEDULER_AWAITINGRESPONSE_LABEL);
     var addLabelToThreadLimit = 100;
 
     // addToThreads has a limit of 100 threads. Use batching.
@@ -148,14 +156,14 @@ function markUnresponded(threads) {
         for (var i = 0; i < Math.ceil(threads.length / addLabelToThreadLimit); i++) {
             pageOfThreads = threads.slice(100 * i, 100 * (i + 1));
             noResponselabel.addToThreads(pageOfThreads);
-            awaitingResponselabel.removeFromThreads(pageOfThreads);
+            timerLabel.removeFromThreads(pageOfThreads);
             GmailApp.moveThreadsToInbox(pageOfThreads);
             GmailApp.markThreadsUnread(pageOfThreads);
 
         }
     } else {
         noResponselabel.addToThreads(threads);
-        awaitingResponselabel.removeFromThreads(threads);
+        timerLabel.removeFromThreads(threads);
         GmailApp.moveThreadsToInbox(threads);
         GmailApp.markThreadsUnread(threads);
     }

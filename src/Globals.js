@@ -5,7 +5,7 @@
 var SCHEDULER_LABEL = 'GScheduler';
 var SCHEDULER_TIMER_LABEL = SCHEDULER_LABEL + '/' + 'Timer';
 var SCHEDULER_QUEUE_LABEL = SCHEDULER_LABEL + '/' + 'Queue';
-var SCHEDULER_AWAITINGRESPONSE_LABEL = SCHEDULER_LABEL + '/' + 'Awaiting Response';
+//var SCHEDULER_AWAITINGRESPONSE_LABEL = SCHEDULER_LABEL + '/' + 'Awaiting Response';
 var SCHEDULER_NORESPONSE_LABEL = SCHEDULER_LABEL + '/' + 'No Response';
 var SCHEDULER_SNOOZE_LABEL = SCHEDULER_LABEL + '/' + 'Snooze';
 var SCHEDULER_SENDLATER_LABEL = SCHEDULER_LABEL + '/' + 'Send Later';
@@ -20,7 +20,7 @@ var USER_PREFS = null;
 
 
 //Welcome Email Subject
-var EMAIL_WELCOME_SUBJECT = 'Welcome to GmailScheduler';
+var EMAIL_WELCOME_SUBJECT = 'Welcome to Gmail ScheduleIt';
 
 var SCRIPTID = 'AKfycbzTcxE3LbS5JRFIs9OF1Cyx5njXxSbaRWrni2V7Gbpc_uazneI';
 var SETTINGS_URL = 'https://script.google.com/a/bxs.com/macros/s/' + SCRIPTID + '/exec';
