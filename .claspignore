@@ -1,0 +1,6 @@
+# User-specific files
+**/.vs/**
+!appsscript.json
+!clasp.json
+!README.md
+!LICENSE.txt
