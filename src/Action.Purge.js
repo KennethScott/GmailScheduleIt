@@ -56,7 +56,6 @@ function processPurge(event) {
             var timerSugar = timerLabelName.split(/\//).pop();
             Logger.log('Sugar: ' + timerSugar);
 
-            //var minTime = label.split(/\//).pop().split(/\-/).pop();
             var today = new Date();
 
             var beforeDate = today.rewind(timerSugar, false);
@@ -104,7 +103,6 @@ function processPurge(event) {
                 //        }
                 //      }
             }
-
 
         }
         catch (ex if ex instanceof GSCHED.SugarException) {

@@ -1,6 +1,6 @@
 //Refer to troubleshooting #1 to see how to remove any error messages
 function createTriggers() {
-    deleteTriggers();
+    deleteAllTriggers();
 
     var userPrefs = getUserPrefs(false);
     var run_timers_every_x_minutes = userPrefs['run_timers_every_x_minutes'];
@@ -33,116 +33,6 @@ function createTriggers() {
     //processUnresponded();
 }
 
-function deleteTriggers() {
-    var allTriggers = ScriptApp.getProjectTriggers();
-    // Loop over all triggers
-    for (var i = 0; i < allTriggers.length; i++) {
-        ScriptApp.deleteTrigger(allTriggers[i]);
-    }
-}
-
-function processTimer() {
-
-    Logger.log('processTimer Activated ' + new Date().toString());
-
-    var queueLabel = SCHEDULER_QUEUE_LABEL;
-    var queueLabelObject = GmailApp.getUserLabelByName(queueLabel);
-    var timerChildLabels = getUserChildLabels(SCHEDULER_TIMER_LABEL);
-
-    for (var i = 0; i < timerChildLabels.length; i++) {
-        var timerChildLabelObject, queueLabelObject, page;
-        var date = parseDate(timerChildLabels[i]);
-        if (date == null) {
-            continue;
-        }
-        // basically just move it from timer to queue
-        var queueChildLabel = SCHEDULER_QUEUE_LABEL + '/' + timerChildLabels[i];
-
-        timerChildLabelObject = GmailApp.getUserLabelByName(SCHEDULER_TIMER_LABEL + '/' + timerChildLabels[i]);
-        page = null;
-
-        // Get threads in "pages" of 100 at a time
-        // TODO:  Rework.. less frequent scheduling will increase the likelihood of having more than 100 awaiting processing
-        while (!page || page.length == 100) {
-            page = timerChildLabelObject.getThreads(0, 100);
-            if (page.length > 0) {
-                // TODO:  looks like creating an existing label doesn't hurt anything..  maybe performance? 
-                GmailApp.createLabel(queueChildLabel);
-                queueChildLabelObject = GmailApp.getUserLabelByName(queueChildLabel);
-
-                if (queueChildLabelObject) {
-                    queueLabelObject.addToThreads(page);
-                    // Move the threads into queueChildLabel
-                    queueChildLabelObject.addToThreads(page);
-
-                }
-                // Move the threads out of timerLabel
-                timerChildLabelObject.removeFromThreads(page);
-            }
-        }
-
-    }
-}
-
-
-
-function processQueue() {
-    Logger.log('processQueue Activated ' + new Date().toString());
-    var userPrefs = getUserPrefs(false);
-
-    var queueLabel = SCHEDULER_QUEUE_LABEL;
-    var queueLabelObject = GmailApp.getUserLabelByName(queueLabel);
-    var queueChildLabels = getUserChildLabels(SCHEDULER_QUEUE_LABEL);
-
-    for (var i = 0; i < queueChildLabels.length; i++) {
-        var currentDate = convertToUserDate(new Date());
-        var queueChildDate = parseDate(queueChildLabels[i]);
-
-        //skip if queuedatetime is not ready to process
-        if (currentDate.getTime() < queueChildDate.getTime()) {
-            Logger.log('process later');
-            continue;
-        }
-
-        var queueChildLabel = SCHEDULER_QUEUE_LABEL + '/' + queueChildLabels[i];
-        var queueChildLabelObject = GmailApp.getUserLabelByName(queueChildLabel);
-        var threads = queueChildLabelObject.getThreads();
-
-        //Remove queue child label if nothing to process
-        if (threads.length == 0) {
-            deleteLabel(queueChildLabel);
-        }
-
-        for (var x in threads) {
-
-            var thread = threads[x];
-            var message = GmailApp.getMessageById(thread.getMessages()[0].getId());
-
-            if (message.isDraft()) {
-                var sentMessage = GmailApp.getDraft(message.get()).send();
-
-                //move sent message to inbox
-                if (userPrefs['move_sent_messages_inbox']) {
-                    sentMessage.removeLabel(queueLabelObject);
-                    sentMessage.removeLabel(queueChildLabelObject);
-                    sentMessage.moveToInbox();
-                }
-
-            } else {
-                thread.removeLabel(queueLabelObject);
-                thread.removeLabel(queueChildLabelObject);
-                GmailApp.moveThreadToInbox(threads[x]);
-
-                if (userPrefs['mark_sent_messages_inbox_unread']) {
-                    GmailApp.markMessageUnread(message);
-                }
-
-            }
-
-        }
-
-    }
-}
 
 
 function moveDraftsToInbox() {
@@ -164,10 +54,6 @@ function moveDraftsToInbox() {
         }
     }
 }
-
-
-
-
 
 
 

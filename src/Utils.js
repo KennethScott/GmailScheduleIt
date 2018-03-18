@@ -111,24 +111,3 @@ function dateConversionRequired(str) {
     return false;
 }
 
-
-// Mapping of Gmail search time units to milliseconds.
-var UNIT_MAPPING = {
-    h: 36e5, // Hours
-    d: 864e5, // Days
-    w: 6048e5, // Weeks
-    m: 263e7, // Months
-    y: 3156e7 // Years
-};
-
-function subtractGmailDateString(date, timeStr) {
-    // Takes a date object and subtracts a Gmail-style time string (e.g. '5d').
-    // Returns a new date object.
-    var re = /^([0-9]+)([a-zA-Z]+)$/,
-        parts = re.exec(timeStr),
-        val = parts && parts[1],
-        unit = parts && parts[2],
-        ms = UNIT_MAPPING[unit];
-
-    return date.getTime() - (val * ms);
-}
