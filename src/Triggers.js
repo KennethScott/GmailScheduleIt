@@ -20,10 +20,10 @@ function createTriggers() {
 //        .everyMinutes(run_timers_every_x_minutes)
 //        .create();
 //
-    var unrespondedTrigger = ScriptApp.newTrigger("processUnresponded")
-        .timeBased()
-        .everyMinutes(run_timers_every_x_minutes)
-        .create();
+    //var unrespondedTrigger = ScriptApp.newTrigger("processUnresponded")
+    //    .timeBased()
+    //    .everyMinutes(run_timers_every_x_minutes)
+    //    .create();
   
     //processUnresponded();
 }

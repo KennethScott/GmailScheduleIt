@@ -26,7 +26,7 @@ function processUnresponded(event) {
         timerLabelNames = getUserChildLabelNames(SCHEDULER_NORESPONSE_LABEL).remove(new RegExp("\/"+TIMER_ERROR_PREFIX));
     }
 
-    for each(var timerLabelName in timerLabelNames) {
+    timerLabelNames.forEach(function (timerLabelName) {
 
         Logger.log('Processing label: ' + timerLabelName);
 
@@ -91,7 +91,8 @@ function processUnresponded(event) {
                 setupTriggerArguments(trigger, { "labelName": timerLabelName, "epoch": lastThreadLastMessageEpoch }, false);
             }
 
-        } catch (ex) {
+        }
+        catch (ex) {
 
             console.error(ex);
             Logger.log('Notify user and renaming label with error: ' + timerLabelName);
@@ -115,7 +116,7 @@ function processUnresponded(event) {
             }          
         }
 
-    }
+    });
 }
 
 function isMe(fromAddress) {
