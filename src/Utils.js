@@ -30,6 +30,15 @@ function deleteLabel(label) {
     } catch (ex) {}
 }
 
+function renameLabelByName(oldName, newName) {
+    // rename the label, prepending the bad sugar with the ERROR prefix
+    var label = Gmail.Users.Labels.list('me').labels.find(function (l) {
+        return l.name == oldName;
+    });
+    label.name = newName;
+    Gmail.Users.Labels.update(label, 'me', label.id);
+}
+
 function createTimerChildLabels(labels) {
     for (var i in labels) {
         GmailApp.createLabel(SCHEDULER_TIMER_LABEL + '/' + labels[i]);

@@ -24,7 +24,12 @@ function createTriggers() {
     //    .timeBased()
     //    .everyMinutes(run_timers_every_x_minutes)
     //    .create();
-  
+
+    //var purgeTrigger = ScriptApp.newTrigger("processPurge")
+    //    .timeBased()
+    //    .everyMinutes(run_timers_every_x_minutes)
+    //    .create();
+
     //processUnresponded();
 }
 

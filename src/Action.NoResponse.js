@@ -10,20 +10,21 @@
  * Emails found with no response by the indicated time period will be 1) labeled with the SCHEDULER_NORESPONSE_LABEL value, timer label removed, marked unread, and moved to the inbox.
  *
  */
+//import 'google-apps-script';
 
 function processUnresponded(event) {
 
     var timerLabelNames = [],
         lastRun;
 
-    if (event != undefined) { // new run   
-        lastRun = handleTriggered(event.triggerUid);
-        timerLabelNames = [ lastRun.labelName ];
-        Logger.log("Continuation run of label: " + lastRun.labelName + " - before epoch: " + lastRun.epoch);
+    if (event == undefined) { // new run
+        // get sublabels, but skip labels marked as error and recurring
+        timerLabelNames = getUserChildLabelNames(SCHEDULER_NORESPONSE_LABEL).remove(new RegExp("\/" + TIMER_ERROR_PREFIX, "i"));
     } 
-    else {
-        // skip labels marked as error
-        timerLabelNames = getUserChildLabelNames(SCHEDULER_NORESPONSE_LABEL).remove(new RegExp("\/"+TIMER_ERROR_PREFIX));
+    else {  // continuation run
+        lastRun = handleTriggered(event.triggerUid);
+        timerLabelNames = [lastRun.labelName];
+        Logger.log("Continuation run of label: " + lastRun.labelName + " - before epoch: " + lastRun.epoch);
     }
 
     timerLabelNames.forEach(function (timerLabelName) {
@@ -65,7 +66,7 @@ function processUnresponded(event) {
                 var notifyDate = lastMessageDate.get(timerSugar);
 
                 if (notifyDate.toString() == "Invalid Date" || notifyDate.is(lastMessageDate)) {
-                    throw "Error processing label: " + timerSugar + ". Messages for this label are not being processed.";
+                    throw new GSCHED.SugarException("Error processing label: " + timerSugar + ". Messages for this label are not being processed.");
                 }
 
                 Logger.log(notifyDate.toString());
@@ -92,28 +93,23 @@ function processUnresponded(event) {
             }
 
         }
-        catch (ex) {
+        catch (ex if ex instanceof GSCHED.SugarException) {
 
             console.error(ex);
             Logger.log('Notify user and renaming label with error: ' + timerLabelName);
 
             GmailApp.sendEmail(getActiveUserEmail(), SCHEDULER_LABEL, ex);                      
 
-            // can't actually rename a label so we have to add the new one and delete the old one from the threads
-            var errLabelName = timerLabelName.replace(timerSugar, TIMER_ERROR_PREFIX + timerSugar)
-
-            getLabel(errLabelName).addToThreads(threads);
-            var timerLabel = getLabel(timerLabelName);
-            timerLabel.removeFromThreads(threads);
+            // rename the label, prepending the bad sugar with the ERROR prefix
+            renameLabelByName(timerLabelName, timerLabelName.replace(timerSugar, TIMER_ERROR_PREFIX + timerSugar));
 
             // mark them unread so they'll stand out
             GmailApp.markThreadsUnread(threads);    
-
-            // if there are no more messages with the bad label, go ahead and delete it for cleanup
-            if (timerLabel.getThreads(0, 1).length == 0) {
-                Logger.log('Deleting label: ' + timerLabelName);
-                timerLabel.deleteLabel();
-            }          
+    
+        }
+        catch (ex) {
+            console.error('processUnresponded() yielded an error: ' + ex);
+            GmailApp.sendEmail(getActiveUserEmail(), SCHEDULER_LABEL, ex);
         }
 
     });

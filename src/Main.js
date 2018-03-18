@@ -5,6 +5,7 @@ function setupStaticLabels() {
     //GmailApp.createLabel(SCHEDULER_AWAITINGRESPONSE_LABEL);
     GmailApp.createLabel(SCHEDULER_NORESPONSE_LABEL);
     GmailApp.createLabel(SCHEDULER_SNOOZE_LABEL);
+    GmailApp.createLabel(SCHEDULER_PURGE_LABEL);
     GmailApp.createLabel(SCHEDULER_SENDLATER_LABEL);
     GmailApp.createLabel(SCHEDULER_RECURRING_LABEL);
 }

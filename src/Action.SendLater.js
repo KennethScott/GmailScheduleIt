@@ -8,15 +8,15 @@ function processSendLater(event) {
     var timerLabelNames = [],
         lastRun;
 
-    if (event != undefined) { // new run   
+    if (event == undefined) { // new run   
+        // skip labels marked as error
+        var exclude = (SCHEDULER_SENDLATER_LABEL + "/" + TIMER_ERROR_PREFIX + "|" + SCHEDULER_RECURRING_LABEL).replace("/", "\/");
+        timerLabelNames = getUserChildLabelNames(SCHEDULER_SENDLATER_LABEL).remove(new RegExp(exclude, "i"));
+    }
+    else {  // continuation run
         lastRun = handleTriggered(event.triggerUid);
         timerLabelNames = [lastRun.labelName];
         Logger.log("Continuation run of label: " + lastRun.labelName + " - token: " + lastRun.token);
-    }
-    else {
-        // skip labels marked as error
-        var exclude = (SCHEDULER_SENDLATER_LABEL + "/" + TIMER_ERROR_PREFIX + "|" + SCHEDULER_RECURRING_LABEL).replace("/", "\/"); 
-        timerLabelNames = getUserChildLabelNames(SCHEDULER_SENDLATER_LABEL).remove(new RegExp(exclude, "i"));
     }
 
     timerLabelNames.forEach(function (timerLabelName) {
@@ -56,7 +56,8 @@ function processSendLater(event) {
                         // this is horrible.. but we need arrays of the labels and the names
                         var draftLabels = draftMessage.getThread().getLabels();                        
 
-                        if (draftLabels.length > 0) {
+                        // we know there's at least the one timer label.. we're looking for a second/recurring label
+                        if (draftLabels.length > 1) {
 
                             var draftLabelNames = [];
                             draftLabels.forEach(function (l) {
@@ -67,13 +68,13 @@ function processSendLater(event) {
 
                             if (draftLabelNames.indexOf(SCHEDULER_RECURRING_LABEL) >= 0) {
 
-                                Logger.log('Found recurring label');
+                                Logger.log('Found recurring label. Create new (duplicate) draft to leave in Drafts for next time.');
                                 var newDraft = GmailApp.createDraft(draftMessage.getTo(), draftMessage.getSubject(), "",
                                     {
                                         attachments: draftMessage.getAttachments(),
                                         cc: draftMessage.getCc(),
                                         bcc: draftMessage.getBcc(),
-                                        htmlBody: draftMessage.getBody()
+                                        htmlBody: draftMessage.getBody()                                        
                                     });
 
                                 // add all the labels
@@ -98,25 +99,12 @@ function processSendLater(event) {
 
                     GmailApp.sendEmail(getActiveUserEmail(), SCHEDULER_LABEL, ex);
 
-                    var draftMessageThread = draftMessage.getThread();
-
-                    // can't actually rename a label so we have to add the new one and delete the old one from the threads
-                    var errLabelName = timerLabelName.replace(timerSugar, TIMER_ERROR_PREFIX + timerSugar)
-
-                    draftMessageThread.addLabel(getLabel(errLabelName));
-
-                    var timerLabel = getLabel(timerLabelName);
-                    draftMessageThread.removeLabel(timerLabel);
-
-                    // if there are no more messages with the bad label, go ahead and delete it for cleanup
-                    if (timerLabel.getThreads(0, 1).length == 0) {
-                        Logger.log('Deleting label: ' + timerLabelName);
-                        timerLabel.deleteLabel();
-                    }
+                    // rename the label, prepending the bad sugar with the ERROR prefix
+                    renameLabelByName(timerLabelName, timerLabelName.replace(timerSugar, TIMER_ERROR_PREFIX + timerSugar));
 
                 }
                 catch (ex) {
-                    console.error(ex);
+                    console.error('processSendLater() yielded an error: ' + ex);
                     GmailApp.sendEmail(getActiveUserEmail(), SCHEDULER_LABEL, ex);
                 }
 
