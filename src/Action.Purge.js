@@ -1,22 +1,21 @@
 //import 'google-apps-script';
 
-var TRIGGER_NAME = "dailyAutoDeleteGmail";
 
+//function Install() {
 
-function Install() {
+//    var TRIGGER_NAME = "dailyAutoDeleteGmail";
 
+//    // First run 1 mins after install
+//    ScriptApp.newTrigger(TRIGGER_NAME)
+//        .timeBased()
+//        .at(new Date((new Date()).getTime() + 1000 * 60 * 1))
+//        .create();
 
-    // First run 1 mins after install
-    ScriptApp.newTrigger(TRIGGER_NAME)
-        .timeBased()
-        .at(new Date((new Date()).getTime() + 1000 * 60 * 1))
-        .create();
+//    // Run daily there after
+//    ScriptApp.newTrigger(TRIGGER_NAME)
+//        .timeBased().everyDays(1).create();
 
-    // Run daily there after
-    ScriptApp.newTrigger(TRIGGER_NAME)
-        .timeBased().everyDays(1).create();
-
-}
+//}
 
 
 
@@ -34,20 +33,6 @@ function processPurge(event) {
         timerLabelNames = [lastRun.labelName];
         Logger.log("Continuation run of label: " + lastRun.labelName);
     }
-
-
-
-    //var labels = [];
-
-    //if (event == undefined) {  // new run    
-    //    labels = GmailApp.getUserLabels();
-    //}
-    //else {  // continuation run 
-    //    var labelName = handleTriggered(event.triggerUid);
-    //    console.info("Continuation run of label: %s", labelName);
-    //    labels = [ getLabel(labelName) ];
-    //}
-
 
     timerLabelNames.forEach(function (timerLabelName) {
 
@@ -67,6 +52,7 @@ function processPurge(event) {
             // Define all the filters.
             var filters = [
                 'label:' + timerLabelName,
+                '-in:chats',
                 'before:' + beforeDate.getTime()
             ];
 

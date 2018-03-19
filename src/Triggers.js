@@ -1,64 +1,48 @@
-//Refer to troubleshooting #1 to see how to remove any error messages
+//import 'google-apps-script';
+
+var RECURRING_KEY = "recurring";
+var ARGUMENTS_KEY = "arguments";
+
+/**
+ * Create all the triggers at install or recreate on save
+ * Refer to troubleshooting #1 to see how to remove any error messages
+ */
 function createTriggers() {
-    deleteAllTriggers();
+
+    deleteTriggers();
 
     var userPrefs = getUserPrefs(false);
     var run_timers_every_x_minutes = userPrefs['run_timers_every_x_minutes'];
 
-//    var timerTrigger = ScriptApp.newTrigger("processTimer")
-//        .timeBased()
-//        .everyMinutes(run_timers_every_x_minutes)
-//        .create();
-//
-//    var queueTrigger = ScriptApp.newTrigger("processQueue")
-//        .timeBased()
-//        .everyMinutes(run_timers_every_x_minutes)
-//        .create();
-//
-//    var draftsTrigger = ScriptApp.newTrigger("moveDraftsToInbox")
-//        .timeBased()
-//        .everyMinutes(run_timers_every_x_minutes)
-//        .create();
-//
-    //var unrespondedTrigger = ScriptApp.newTrigger("processUnresponded")
-    //    .timeBased()
-    //    .everyMinutes(run_timers_every_x_minutes)
-    //    .create();
+    ScriptApp.newTrigger("processUnresponded")
+        .timeBased()
+        .everyMinutes(run_timers_every_x_minutes)
+        .create();
 
-    //var purgeTrigger = ScriptApp.newTrigger("processPurge")
-    //    .timeBased()
-    //    .everyMinutes(run_timers_every_x_minutes)
-    //    .create();
+    ScriptApp.newTrigger("processSendLater")
+        .timeBased()
+        .everyMinutes(run_timers_every_x_minutes)
+        .create();
+
+    ScriptApp.newTrigger("processSnoozed")
+        .timeBased()
+        .everyMinutes(run_timers_every_x_minutes)
+        .create();
+
+    // First run 1 min after install
+    ScriptApp.newTrigger("processPurge")
+        .timeBased()
+        .at(new Date((new Date()).getTime() + 1000 * 60 * 1))
+        .create();
+
+    // Then run daily there after
+    ScriptApp.newTrigger("processPurge")
+        .timeBased()
+        .everyDays(1)
+        .create();
 
     //processUnresponded();
 }
-
-
-
-function moveDraftsToInbox() {
-    var userPrefs = getUserPrefs(false);
-
-    if (!userPrefs['nolabel_drafts_to_inbox']) {
-        return;
-    }
-
-    var drafts = GmailApp.getDraftMessages();
-
-    for (var i = 0; i < drafts.length; i++) {
-
-        if (drafts[i].getSubject().match(/inbox0/)) {
-            //BONUS: If draft emails have subject inbox0 in them, then do not return those to inbox.
-        } else {
-            //Move to these drafts to inbox    
-            drafts[i].getThread().moveToInbox();
-        }
-    }
-}
-
-
-
-var RECURRING_KEY = "recurring";
-var ARGUMENTS_KEY = "arguments";
 
 /**
  * Sets up the arguments for the given trigger.
@@ -69,12 +53,12 @@ var ARGUMENTS_KEY = "arguments";
  *   arguments and the trigger are removed once it called the function
  */
 function setupTriggerArguments(trigger, functionArguments, recurring) {
-  var triggerUid = trigger.getUniqueId();
-  var triggerData = {};
-  triggerData[RECURRING_KEY] = recurring;
-  triggerData[ARGUMENTS_KEY] = functionArguments;
+    var triggerUid = trigger.getUniqueId();
+    var triggerData = {};
+    triggerData[RECURRING_KEY] = recurring;
+    triggerData[ARGUMENTS_KEY] = functionArguments;
 
-  PropertiesService.getScriptProperties().setProperty(triggerUid, JSON.stringify(triggerData));
+    PropertiesService.getScriptProperties().setProperty(triggerUid, JSON.stringify(triggerData));
 }
 
 /**
@@ -85,14 +69,14 @@ function setupTriggerArguments(trigger, functionArguments, recurring) {
  * @return {*} - The arguments stored for this trigger
  */
 function handleTriggered(triggerUid) {
-  var scriptProperties = PropertiesService.getScriptProperties();
-  var triggerData = JSON.parse(scriptProperties.getProperty(triggerUid));
+    var scriptProperties = PropertiesService.getScriptProperties();
+    var triggerData = JSON.parse(scriptProperties.getProperty(triggerUid));
 
-  if (!triggerData[RECURRING_KEY]) {
-    deleteTriggerByUid(triggerUid);
-  }
+    if (!triggerData[RECURRING_KEY]) {
+        deleteTriggerByUid(triggerUid);
+    }
 
-  return triggerData[ARGUMENTS_KEY];
+    return triggerData[ARGUMENTS_KEY];
 }
 
 /**
@@ -101,7 +85,7 @@ function handleTriggered(triggerUid) {
  * @param {string} triggerUid - The trigger id
  */
 function deleteTriggerArguments(triggerUid) {
-  PropertiesService.getScriptProperties().deleteProperty(triggerUid);
+    PropertiesService.getScriptProperties().deleteProperty(triggerUid);
 }
 
 /**
@@ -112,18 +96,18 @@ function deleteTriggerArguments(triggerUid) {
  * @param {string} triggerUid - The trigger id
  */
 function deleteTriggerByUid(triggerUid) {
-  if (!ScriptApp.getProjectTriggers().some(function (trigger) {
-    if (trigger.getUniqueId() === triggerUid) {
-      ScriptApp.deleteTrigger(trigger);
-      return true;
+    if (!ScriptApp.getProjectTriggers().some(function (trigger) {
+        if (trigger.getUniqueId() === triggerUid) {
+            ScriptApp.deleteTrigger(trigger);
+            return true;
+        }
+
+        return false;
+    })) {
+        console.error("Could not find trigger with id '%s'", triggerUid);
     }
 
-    return false;
-  })) {
-    console.error("Could not find trigger with id '%s'", triggerUid);
-  }
-
-  deleteTriggerArguments(triggerUid);
+    deleteTriggerArguments(triggerUid);
 }
 
 /**
@@ -132,17 +116,17 @@ function deleteTriggerByUid(triggerUid) {
  * @param {Trigger} trigger - The trigger
  */
 function deleteTrigger(trigger) {
-  ScriptApp.deleteTrigger(trigger);
-  deleteTriggerArguments(trigger.getUniqueId());
+    ScriptApp.deleteTrigger(trigger);
+    deleteTriggerArguments(trigger.getUniqueId());
 }
 
 /**
  * Deletes all project triggers and their arguments.
  */
-function deleteAllTriggers() {
-  // Delete all triggers and parameters
-  var triggers = ScriptApp.getProjectTriggers();
-  for (var i=0; i<triggers.length; i++) {    
-    deleteTrigger(triggers[i]);
-  }  
+function deleteTriggers() {
+    // Delete all triggers and parameters
+    var triggers = ScriptApp.getProjectTriggers();
+    for (var i = 0; i < triggers.length; i++) {
+        deleteTrigger(triggers[i]);
+    }
 }

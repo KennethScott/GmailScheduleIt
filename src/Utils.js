@@ -1,3 +1,4 @@
+
 function getTimeZoneString() {
     var userPrefs = getUserPrefs();
     var timezone_string = userPrefs['localzone'];
@@ -23,61 +24,6 @@ function getActiveUserEmail() {
     return Session.getActiveUser().getEmail();
 }
 
-function deleteLabel(label) {
-    var label = GmailApp.getUserLabelByName(label);
-    try {
-        label.deleteLabel();
-    } catch (ex) {}
-}
-
-function renameLabelByName(oldName, newName) {
-    // rename the label, prepending the bad sugar with the ERROR prefix
-    var label = Gmail.Users.Labels.list('me').labels.find(function (l) {
-        return l.name == oldName;
-    });
-    label.name = newName;
-    Gmail.Users.Labels.update(label, 'me', label.id);
-}
-
-function createTimerChildLabels(labels) {
-    for (var i in labels) {
-        GmailApp.createLabel(SCHEDULER_TIMER_LABEL + '/' + labels[i]);
-    }
-
-    return true;
-}
-
-function createTimerChildLabel(label) {
-    GmailApp.createLabel(SCHEDULER_TIMER_LABEL + '/' + label);
-}
-
-function deleteTimerChildLabel(label) {
-    deleteLabel(SCHEDULER_TIMER_LABEL + '/' + label);
-}
-
-// TODO: delete later
-function getUserChildLabels(label) {
-    labels = GmailApp.getUserLabels();
-    var childLabels = [];
-    for each (var l in labels) {
-        if (l.getName().indexOf(label + '/') == 0) {
-            childLabels.push(l.getName().replace(label + '/', ""));
-        }
-    }
-    return childLabels;
-}
-
-// TODO: consider caching
-function getUserChildLabelNames(label) {
-    labels = GmailApp.getUserLabels();
-    var childLabels = [];
-    for each (var l in labels) {
-        if (l.getName().indexOf(label + '/') == 0) {
-            childLabels.push(l.getName());
-        }
-    }
-    return childLabels;
-}
 
 function parseDate(str) {
     // return Date.parse(str);

@@ -43,10 +43,29 @@ function savePrefsFromForm(form_object) {
 
 function loadPrefsForForm() {
     prefs = UserProperties.getProperties();
-    var timerLabels = getUserChildLabels(SCHEDULER_TIMER_LABEL);
 
-    if (timerLabels.length) {
-        prefs['timer'] = timerLabels;
+    var noResponseTimerLabels = getUserChildLabels(SCHEDULER_NORESPONSE_LABEL);
+
+    if (noResponseTimerLabels.length) {
+        prefs['noResponseTimers'] = noResponseTimerLabels;
+    }
+
+    var snoozeTimerLabels = getUserChildLabels(SCHEDULER_SNOOZE_LABEL);
+
+    if (snoozeTimerLabels.length) {
+        prefs['snoozeTimers'] = snoozeTimerLabels;
+    }
+
+    var purgeTimerLabels = getUserChildLabels(SCHEDULER_PURGE_LABEL);
+
+    if (purgeTimerLabels.length) {
+        prefs['purgeTimers'] = purgeTimerLabels;
+    }
+
+    var sendLaterTimerLabels = getUserChildLabels(SCHEDULER_SENDLATER_LABEL).remove(new RegExp(SCHEDULER_RECURRING_LABEL, "i"));
+
+    if (sendLaterTimerLabels.length) {
+        prefs['sendLaterTimers'] = sendLaterTimerLabels;
     }
 
     for (default_prop in DEFAULT_PREFS) {

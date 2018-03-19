@@ -1,4 +1,4 @@
-//import 'google-apps-script';
+import 'google-apps-script';
 
 function processSendLater(event) {
 
@@ -32,12 +32,12 @@ function processSendLater(event) {
 
             searchResults.drafts.forEach(function (d) {
 
-                var draft = GmailApp.getDraft(d.id);
-
-                var timerSugar = timerLabelName.split(/\//).pop();
-                Logger.log('Sugar: ' + timerSugar);
-
                 try {
+
+                    var draft = GmailApp.getDraft(d.id);
+
+                    var timerSugar = timerLabelName.split(/\//).pop();
+                    Logger.log('Sugar: ' + timerSugar);
 
                     var draftMessage = draft.getMessage();
 
@@ -54,7 +54,8 @@ function processSendLater(event) {
                     if (sendDate.isPast()) {
 
                         // this is horrible.. but we need arrays of the labels and the names
-                        var draftLabels = draftMessage.getThread().getLabels();                        
+                        var draftThread = draftMessage.getThread();
+                        var draftLabels = draftThread.getLabels();                        
 
                         // we know there's at least the one timer label.. we're looking for a second/recurring label
                         if (draftLabels.length > 1) {
@@ -88,6 +89,11 @@ function processSendLater(event) {
 
                         Logger.log('Sending the draft');
                         draft.send();
+
+                        // Remove the timer, add the SendLater, and mark unread so we'll see it.
+                        draftThread.addLabel(SCHEDULER_SENDLATER_LABEL);
+                        draftThread.removeLabel(getLabel(timerLabelName));
+                        draftThread.markUnread();
                         
                     }
 

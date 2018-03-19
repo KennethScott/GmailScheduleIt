@@ -12,6 +12,9 @@ var SCHEDULER_PURGE_LABEL = SCHEDULER_LABEL + '/' + 'Purge';
 var SCHEDULER_SENDLATER_LABEL = SCHEDULER_LABEL + '/' + 'Send Later';
 var SCHEDULER_RECURRING_LABEL = SCHEDULER_SENDLATER_LABEL + '/' + 'Recurring';
 
+// Prefix to append to timer labels that Sugar is unable to parse
+var TIMER_ERROR_PREFIX = 'ERR-';
+
 // Use default google calendar to determine user timezone
 var DEFAULT_TIMEZONE = 'default';
 
@@ -29,9 +32,6 @@ var UNINSTALL_URL = 'https://script.google.com/a/bxs.com/macros/s/' + SCRIPTID +
 
 /* NOTE these names must match the 'name' attribute in HTML */
 var DEFAULT_PREFS = {
-    move_sent_messages_inbox: true,
-    mark_sent_messages_inbox_unread: false,
-    nolabel_drafts_to_inbox: false,
     localzone: 'default',
     timer: ['1 hour later', '2 hours later', '3 hours later', 'One day later', 'tomorrow 8am', 'next monday 8am'],
     run_timers_every_x_minutes: 30
@@ -39,4 +39,3 @@ var DEFAULT_PREFS = {
 
 var PAGE_SIZE = 100;
 var RESUME_FREQUENCY = 1;
-var TIMER_ERROR_PREFIX = 'ERR-';
