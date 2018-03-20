@@ -26,7 +26,7 @@ function processPurge(event) {
 
     if (event == undefined) { // new run   
         // skip labels marked as error
-        timerLabelNames = getUserChildLabelNames(SCHEDULER_PURGE_LABEL).remove(new RegExp("\/" + TIMER_ERROR_PREFIX, "i"));
+        timerLabelNames = getUserChildLabelNames(SCHEDULEIT_PURGE_LABEL).remove(new RegExp("\/" + TIMER_ERROR_PREFIX, "i"));
     }
     else {  // continuation run
         lastRun = handleTriggered(event.triggerUid);
@@ -96,7 +96,7 @@ function processPurge(event) {
             console.error(ex);
             Logger.log('Notify user and renaming label with error: ' + timerLabelName);
 
-            GmailApp.sendEmail(getActiveUserEmail(), SCHEDULER_LABEL, ex);
+            GmailApp.sendEmail(getActiveUserEmail(), SCHEDULEIT_LABEL, ex);
 
             // rename the label, prepending the bad sugar with the ERROR prefix
             renameLabelByName(timerLabelName, timerLabelName.replace(timerSugar, TIMER_ERROR_PREFIX + timerSugar));
@@ -104,7 +104,7 @@ function processPurge(event) {
         }
         catch (ex) {
             console.error('processPurge() yielded an error: ' + ex);
-            GmailApp.sendEmail(getActiveUserEmail(), SCHEDULER_LABEL, ex);
+            GmailApp.sendEmail(getActiveUserEmail(), SCHEDULEIT_LABEL, ex);
         }
 
     });

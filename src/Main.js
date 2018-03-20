@@ -1,12 +1,12 @@
 function setupStaticLabels() {
-    GmailApp.createLabel(SCHEDULER_LABEL);
-    GmailApp.createLabel(SCHEDULER_TIMER_LABEL);
-    GmailApp.createLabel(SCHEDULER_QUEUE_LABEL);
-    GmailApp.createLabel(SCHEDULER_NORESPONSE_LABEL);
-    GmailApp.createLabel(SCHEDULER_SNOOZE_LABEL);
-    GmailApp.createLabel(SCHEDULER_PURGE_LABEL);
-    GmailApp.createLabel(SCHEDULER_SENDLATER_LABEL);
-    GmailApp.createLabel(SCHEDULER_RECURRING_LABEL);
+    GmailApp.createLabel(SCHEDULEIT_LABEL);
+    GmailApp.createLabel(SCHEDULEIT_TIMER_LABEL);
+    GmailApp.createLabel(SCHEDULEIT_QUEUE_LABEL);
+    GmailApp.createLabel(SCHEDULEIT_NORESPONSE_LABEL);
+    //GmailApp.createLabel(SCHEDULEIT_SNOOZE_LABEL);
+    GmailApp.createLabel(SCHEDULEIT_PURGE_LABEL);
+    GmailApp.createLabel(SCHEDULEIT_SENDLATER_LABEL);
+    GmailApp.createLabel(SCHEDULEIT_RECURRING_LABEL);
 }
 
 function sendWelcomeEmail() {

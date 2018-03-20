@@ -3,13 +3,14 @@
 /*
  * Originally from:  https://github.com/hijonathan/google-scripts/blob/master/gmail-no-response.js
  *
- * This script goes through your Gmail Inbox looking for emails labeled as SCHEDULER_NORESPONSE_LABEL + "/" + time indicator.  Examples:
+ * This script goes through your Gmail Inbox looking for emails labeled as SCHEDULEIT_NORESPONSE_LABEL + "/" + time indicator.  Examples:
  * No Response/in 7 days
  * No Response/1 month
  * No Response/after 2 days
  * The time periods should be nested under the main label.
  *
- * Emails found with no response by the indicated time period will be 1) labeled with the SCHEDULER_NORESPONSE_LABEL value, timer label removed, marked unread, and moved to the inbox.
+ * Emails found with no response by the indicated time period will be 1) labeled with the SCHEDULEIT_NORESPONSE_LABEL value, timer label removed, marked unread, and moved to the inbox.
+*  Emails with the timer label but found with a response will have the timer label removed.
  *
  */
 
@@ -20,7 +21,7 @@ function processUnresponded(event) {
 
     if (event == undefined) { // new run
         // get sublabels, but skip labels marked as error and recurring
-        timerLabelNames = getUserChildLabelNames(SCHEDULER_NORESPONSE_LABEL).remove(new RegExp("\/" + TIMER_ERROR_PREFIX, "i"));
+        timerLabelNames = getUserChildLabelNames(SCHEDULEIT_NORESPONSE_LABEL).remove(new RegExp("\/" + TIMER_ERROR_PREFIX, "i"));
     } 
     else {  // continuation run
         lastRun = handleTriggered(event.triggerUid);
@@ -49,7 +50,8 @@ function processUnresponded(event) {
 
             var threads = GmailApp.search(filters.join(' '), 0, PAGE_SIZE),
                 threadMessages = GmailApp.getMessagesForThreads(threads),
-                unrespondedThreads = [];
+                unrespondedThreads = [],
+                respondedThreads = [];
 
             var timerSugar = timerLabelName.split(/\//).pop();
 
@@ -72,8 +74,13 @@ function processUnresponded(event) {
 
                 Logger.log(notifyDate.toString());
 
-                if (isMe(lastFrom) && !isMe(lastTo) && notifyDate.isPast()) {
-                    unrespondedThreads.push(thread);
+                if (isMe(lastFrom)) {
+                    if (!isMe(lastTo) && notifyDate.isPast()) {
+                        unrespondedThreads.push(thread);
+                    }
+                }
+                else {  // someone has responded.. should we only check for the TO?
+                    respondedThreads.push(thread);
                 }
 
             });
@@ -101,7 +108,7 @@ function processUnresponded(event) {
             console.error(ex);
             Logger.log('Notify user and renaming label with error: ' + timerLabelName);
 
-            GmailApp.sendEmail(getActiveUserEmail(), SCHEDULER_LABEL, ex);                      
+            GmailApp.sendEmail(getActiveUserEmail(), SCHEDULEIT_LABEL, ex);                      
 
             // rename the label, prepending the bad sugar with the ERROR prefix
             renameLabelByName(timerLabelName, timerLabelName.replace(timerSugar, TIMER_ERROR_PREFIX + timerSugar));
@@ -112,7 +119,7 @@ function processUnresponded(event) {
         }
         catch (ex) {
             console.error('processUnresponded() yielded an error: ' + ex);
-            GmailApp.sendEmail(getActiveUserEmail(), SCHEDULER_LABEL, ex);
+            GmailApp.sendEmail(getActiveUserEmail(), SCHEDULEIT_LABEL, ex);
         }
 
     });
@@ -148,7 +155,7 @@ function getEmailAddresses() {
 
 function markUnresponded(threads, timerLabelName) {
     var timerLabel = getLabel(timerLabelName);
-    var noResponselabel = getLabel(SCHEDULER_NORESPONSE_LABEL);
+    var noResponselabel = getLabel(SCHEDULEIT_NORESPONSE_LABEL);
     var addLabelToThreadLimit = 100;
 
     // addToThreads has a limit of 100 threads. Use batching.
@@ -159,12 +166,26 @@ function markUnresponded(threads, timerLabelName) {
             timerLabel.removeFromThreads(pageOfThreads);
             GmailApp.moveThreadsToInbox(pageOfThreads);
             GmailApp.markThreadsUnread(pageOfThreads);
-
         }
     } else {
         noResponselabel.addToThreads(threads);
         timerLabel.removeFromThreads(threads);
         GmailApp.moveThreadsToInbox(threads);
         GmailApp.markThreadsUnread(threads);
+    }
+}
+
+function markResponded(threads, timerLabelName) {
+    var timerLabel = getLabel(timerLabelName);
+    var addLabelToThreadLimit = 100;
+
+    // addToThreads has a limit of 100 threads. Use batching.
+    if (threads.length > addLabelToThreadLimit) {
+        for (var i = 0; i < Math.ceil(threads.length / addLabelToThreadLimit); i++) {
+            pageOfThreads = threads.slice(100 * i, 100 * (i + 1));
+            timerLabel.removeFromThreads(pageOfThreads);
+        }
+    } else {
+        timerLabel.removeFromThreads(threads);
     }
 }

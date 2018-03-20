@@ -2,15 +2,14 @@
  GLOBALS
 **********************/
 // Top level label name
-var SCHEDULER_LABEL = 'GScheduler';
-var SCHEDULER_TIMER_LABEL = SCHEDULER_LABEL + '/' + 'Timer';
-var SCHEDULER_QUEUE_LABEL = SCHEDULER_LABEL + '/' + 'Queue';
-//var SCHEDULER_AWAITINGRESPONSE_LABEL = SCHEDULER_LABEL + '/' + 'Awaiting Response';
-var SCHEDULER_NORESPONSE_LABEL = SCHEDULER_LABEL + '/' + 'No Response';
-var SCHEDULER_SNOOZE_LABEL = SCHEDULER_LABEL + '/' + 'Snooze';
-var SCHEDULER_PURGE_LABEL = SCHEDULER_LABEL + '/' + 'Purge';
-var SCHEDULER_SENDLATER_LABEL = SCHEDULER_LABEL + '/' + 'Send Later';
-var SCHEDULER_RECURRING_LABEL = SCHEDULER_SENDLATER_LABEL + '/' + 'Recurring';
+var SCHEDULEIT_LABEL = 'GScheduleIt';
+//var SCHEDULEIT_TIMER_LABEL = SCHEDULEIT_LABEL + '/' + 'Timer';
+//var SCHEDULEIT_QUEUE_LABEL = SCHEDULEIT_LABEL + '/' + 'Queue';
+var SCHEDULEIT_NORESPONSE_LABEL = SCHEDULEIT_LABEL + '/' + 'No Response';
+//var SCHEDULEIT_SNOOZE_LABEL = SCHEDULEIT_LABEL + '/' + 'Snooze';
+var SCHEDULEIT_PURGE_LABEL = SCHEDULEIT_LABEL + '/' + 'Purge';
+var SCHEDULEIT_SENDLATER_LABEL = SCHEDULEIT_LABEL + '/' + 'Send Later';
+var SCHEDULEIT_RECURRING_LABEL = SCHEDULEIT_SENDLATER_LABEL + '/' + 'Recurring';
 
 // Prefix to append to timer labels that Sugar is unable to parse
 var TIMER_ERROR_PREFIX = 'ERR-';

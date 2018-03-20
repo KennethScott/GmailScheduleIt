@@ -1,4 +1,4 @@
-import 'google-apps-script';
+//import 'google-apps-script';
 
 function processSendLater(event) {
 
@@ -10,8 +10,8 @@ function processSendLater(event) {
 
     if (event == undefined) { // new run   
         // skip labels marked as error
-        var exclude = (SCHEDULER_SENDLATER_LABEL + "/" + TIMER_ERROR_PREFIX + "|" + SCHEDULER_RECURRING_LABEL).replace("/", "\/");
-        timerLabelNames = getUserChildLabelNames(SCHEDULER_SENDLATER_LABEL).remove(new RegExp(exclude, "i"));
+        var exclude = (SCHEDULEIT_SENDLATER_LABEL + "/" + TIMER_ERROR_PREFIX + "|" + SCHEDULEIT_RECURRING_LABEL).replace("/", "\/");
+        timerLabelNames = getUserChildLabelNames(SCHEDULEIT_SENDLATER_LABEL).remove(new RegExp(exclude, "i"));
     }
     else {  // continuation run
         lastRun = handleTriggered(event.triggerUid);
@@ -67,7 +67,7 @@ function processSendLater(event) {
 
                             Logger.log(draftLabelNames.join(' : '));
 
-                            if (draftLabelNames.indexOf(SCHEDULER_RECURRING_LABEL) >= 0) {
+                            if (draftLabelNames.indexOf(SCHEDULEIT_RECURRING_LABEL) >= 0) {
 
                                 Logger.log('Found recurring label. Create new (duplicate) draft to leave in Drafts for next time.');
                                 var newDraft = GmailApp.createDraft(draftMessage.getTo(), draftMessage.getSubject(), "",
@@ -91,7 +91,7 @@ function processSendLater(event) {
                         draft.send();
 
                         // Remove the timer, add the SendLater, and mark unread so we'll see it.
-                        draftThread.addLabel(SCHEDULER_SENDLATER_LABEL);
+                        draftThread.addLabel(SCHEDULEIT_SENDLATER_LABEL);
                         draftThread.removeLabel(getLabel(timerLabelName));
                         draftThread.markUnread();
                         
@@ -103,7 +103,7 @@ function processSendLater(event) {
                     console.error(ex);
                     Logger.log('Notify user and renaming label with error: ' + timerLabelName);
 
-                    GmailApp.sendEmail(getActiveUserEmail(), SCHEDULER_LABEL, ex);
+                    GmailApp.sendEmail(getActiveUserEmail(), SCHEDULEIT_LABEL, ex);
 
                     // rename the label, prepending the bad sugar with the ERROR prefix
                     renameLabelByName(timerLabelName, timerLabelName.replace(timerSugar, TIMER_ERROR_PREFIX + timerSugar));
@@ -111,7 +111,7 @@ function processSendLater(event) {
                 }
                 catch (ex) {
                     console.error('processSendLater() yielded an error: ' + ex);
-                    GmailApp.sendEmail(getActiveUserEmail(), SCHEDULER_LABEL, ex);
+                    GmailApp.sendEmail(getActiveUserEmail(), SCHEDULEIT_LABEL, ex);
                 }
 
             });

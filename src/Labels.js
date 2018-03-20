@@ -5,8 +5,6 @@ function getLabel(labelName) {
     label = this.labels[labelName];
 
     if (!label) {
-        Logger.log('Could not find cached label "' + labelName + '". Fetching.', this.labels);
-
         var label = GmailApp.getUserLabelByName(labelName);
 
         if (label) {
@@ -32,42 +30,54 @@ function renameLabelByName(oldName, newName) {
     var label = Gmail.Users.Labels.list('me').labels.find(function (l) {
         return l.name == oldName;
     });
-    label.name = newName;
-    Gmail.Users.Labels.update(label, 'me', label.id);
+    if (label) {
+        label.name = newName;
+        Gmail.Users.Labels.update(label, 'me', label.id);
+    }
+    else {
+        Logger.log('Rename failed.  Label not found: ' + oldName);
+    }
 }
 
-function createTimerChildLabels(parentLabel, labels) {
-    for (var i in labels) {
-        GmailApp.createLabel(parentLabel + '/' + labels[i]);
+function createTimerChildLabels(parentLabelName, labelNames) {
+    for (var i in labelNames) {
+        GmailApp.createLabel(parentLabelName + '/' + labelNames[i]);
     }
 
     return true;
 }
 
-function createTimerChildLabel(parentLabel, label) {
-    GmailApp.createLabel(parentLabel + '/' + label);
+function createTimerChildLabel(parentLabelName, labelName) {
+    GmailApp.createLabel(parentLabelName + '/' + labelName);
 }
 
-function deleteTimerChildLabel(parentLabel, label) {
-    deleteLabel(parentLabel + '/' + label);
+function deleteTimerChildLabel(parentLabelName, labelName) {
+    deleteLabel(parentLabelName + '/' + labelName);
 }
 
-// TODO: delete later
-// Get just the timer sugar portion for the specified parent label
-function getUserChildLabels(parentLabel) {
-    return getUserChildLabelNames(parentLabel).map(function (s) {
-               return s.replace(parentLabel + '/', "");
-           });
+/**
+ * Returns an array of just the child name portion (timer sugar) of the specified parent label
+ * @param {any} parentLabelName
+ */
+function getUserChildLabels(parentLabelName) {
+    return getUserChildLabelNames(parentLabelName).map(function (s) {
+        return s.replace(parentLabelName + '/', "");
+    });
 }
 
+/**
+ * Returns an array of the full child label names of the specified parent
+ * @param {any} parentLabelName
+ */
+function getUserChildLabelNames(parentLabelName) {
+    // Cache the labels.
+    this.userLabels = this.userLabels || GmailApp.getUserLabels();
 
-function getUserChildLabelNames(label) {
-    this.labels = this.labels || GmailApp.getUserLabels();
     var childLabels = [];
-    for each (var l in labels) {
-        if (l.getName().indexOf(label + '/') == 0) {
+    this.userLabels.forEach(function (l) {
+        if (l.getName().indexOf(parentLabelName + '/') == 0) {
             childLabels.push(l.getName());
         }
-    }
+    });
     return childLabels;
 }

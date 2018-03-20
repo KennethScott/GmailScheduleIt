@@ -24,10 +24,10 @@ function createTriggers() {
         .everyMinutes(run_timers_every_x_minutes)
         .create();
 
-    ScriptApp.newTrigger("processSnoozed")
-        .timeBased()
-        .everyMinutes(run_timers_every_x_minutes)
-        .create();
+    //ScriptApp.newTrigger("processSnoozed")
+    //    .timeBased()
+    //    .everyMinutes(run_timers_every_x_minutes)
+    //    .create();
 
     // First run 1 min after install
     ScriptApp.newTrigger("processPurge")
