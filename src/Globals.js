@@ -7,7 +7,9 @@ var SCHEDULEIT_LABEL = 'GScheduleIt';
 //var SCHEDULEIT_QUEUE_LABEL = SCHEDULEIT_LABEL + '/' + 'Queue';
 var SCHEDULEIT_NORESPONSE_LABEL = SCHEDULEIT_LABEL + '/' + 'No Response';
 //var SCHEDULEIT_SNOOZE_LABEL = SCHEDULEIT_LABEL + '/' + 'Snooze';
-var SCHEDULEIT_PURGE_LABEL = SCHEDULEIT_LABEL + '/' + 'Purge';
+
+// Because of Gmail's filter limitation of only being able to apply a single label, instead of having dedicated labels we'll use a regex to parse label names to get the timer sugar
+//var SCHEDULEIT_PURGE_LABEL = SCHEDULEIT_LABEL + '/' + 'Purge';
 var SCHEDULEIT_SENDLATER_LABEL = SCHEDULEIT_LABEL + '/' + 'Send Later';
 var SCHEDULEIT_RECURRING_LABEL = SCHEDULEIT_SENDLATER_LABEL + '/' + 'Recurring';
 

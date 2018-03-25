@@ -106,7 +106,7 @@ function processSendLater(event) {
                     GmailApp.sendEmail(getActiveUserEmail(), SCHEDULEIT_LABEL, ex);
 
                     // rename the label, prepending the bad sugar with the ERROR prefix
-                    renameLabelByName(timerLabelName, timerLabelName.replace(timerSugar, TIMER_ERROR_PREFIX + timerSugar));
+                    renameLabel(timerLabelName, timerLabelName.replace(timerSugar, TIMER_ERROR_PREFIX + timerSugar));
 
                 }
                 catch (ex) {

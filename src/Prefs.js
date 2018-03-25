@@ -44,25 +44,25 @@ function savePrefsFromForm(form_object) {
 function loadPrefsForForm() {
     prefs = UserProperties.getProperties();
 
-    var noResponseTimerLabels = getUserChildLabels(SCHEDULEIT_NORESPONSE_LABEL);
+    var noResponseTimerLabels = getSugars(SCHEDULEIT_NORESPONSE_LABEL);
 
     if (noResponseTimerLabels.length) {
         prefs['noResponseTimers'] = noResponseTimerLabels;
     }
 
-    //var snoozeTimerLabels = getUserChildLabels(SCHEDULEIT_SNOOZE_LABEL);
+    //var snoozeTimerLabels = getSugars(SCHEDULEIT_SNOOZE_LABEL);
 
     //if (snoozeTimerLabels.length) {
     //    prefs['snoozeTimers'] = snoozeTimerLabels;
     //}
 
-    var purgeTimerLabels = getUserChildLabels(SCHEDULEIT_PURGE_LABEL);
+    //var purgeTimerLabels = getSugars(SCHEDULEIT_PURGE_LABEL);
 
-    if (purgeTimerLabels.length) {
-        prefs['purgeTimers'] = purgeTimerLabels;
-    }
+    //if (purgeTimerLabels.length) {
+    //    prefs['purgeTimers'] = purgeTimerLabels;
+    //}
 
-    var sendLaterTimerLabels = getUserChildLabels(SCHEDULEIT_SENDLATER_LABEL).remove(new RegExp(SCHEDULEIT_RECURRING_LABEL, "i"));
+    var sendLaterTimerLabels = getSugars(SCHEDULEIT_SENDLATER_LABEL).remove(new RegExp(SCHEDULEIT_RECURRING_LABEL, "i"));
 
     if (sendLaterTimerLabels.length) {
         prefs['sendLaterTimers'] = sendLaterTimerLabels;
