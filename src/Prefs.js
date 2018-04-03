@@ -44,11 +44,19 @@ function savePrefsFromForm(form_object) {
 function loadPrefsForForm() {
     prefs = UserProperties.getProperties();
 
-    var noResponseTimerLabels = getSugars(SCHEDULEIT_NORESPONSE_LABEL);
+    var timerLabels = getSugars(SCHEDULEIT_NORESPONSE_LABEL);
 
-    if (noResponseTimerLabels.length) {
-        prefs['noResponseTimers'] = noResponseTimerLabels;
+    Logger.log('loadPrefsForForm-timerLabels: ' + timerLabels);
+
+    if (timerLabels.length) {
+        prefs['timer'] = timerLabels;
     }
+
+    //var noResponseTimerLabels = getSugars(SCHEDULEIT_NORESPONSE_LABEL);
+
+    //if (noResponseTimerLabels.length) {
+    //    prefs['noResponseTimers'] = noResponseTimerLabels;
+    //}
 
     //var snoozeTimerLabels = getSugars(SCHEDULEIT_SNOOZE_LABEL);
 
@@ -62,11 +70,11 @@ function loadPrefsForForm() {
     //    prefs['purgeTimers'] = purgeTimerLabels;
     //}
 
-    var sendLaterTimerLabels = getSugars(SCHEDULEIT_SENDLATER_LABEL).remove(new RegExp(SCHEDULEIT_RECURRING_LABEL, "i"));
+    //var sendLaterTimerLabels = getSugars(SCHEDULEIT_SENDLATER_LABEL).remove(new RegExp(SCHEDULEIT_RECURRING_LABEL, "i"));
 
-    if (sendLaterTimerLabels.length) {
-        prefs['sendLaterTimers'] = sendLaterTimerLabels;
-    }
+    //if (sendLaterTimerLabels.length) {
+    //    prefs['sendLaterTimers'] = sendLaterTimerLabels;
+    //}
 
     for (default_prop in DEFAULT_PREFS) {
         if (prefs[default_prop] == undefined) {

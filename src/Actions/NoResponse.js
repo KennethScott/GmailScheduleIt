@@ -24,6 +24,8 @@ function processUnresponded(event) {
         timerLabelNames = getUserChildLabelNames(SCHEDULEIT_NORESPONSE_LABEL).remove(new RegExp("\/" + TIMER_ERROR_PREFIX, "i"));
     } 
     else {  // continuation run
+        Logger.log('processUnresponded-event-type: ' + typeof event);
+        Logger.log('processUnresponded-event: ' + event);
         lastRun = handleTriggered(event.triggerUid);
         timerLabelNames = [lastRun.labelName];
         Logger.log("Continuation run of label: " + lastRun.labelName + " - before epoch: " + lastRun.epoch);

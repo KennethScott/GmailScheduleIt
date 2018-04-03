@@ -34,7 +34,7 @@ var UNINSTALL_URL = 'https://script.google.com/a/bxs.com/macros/s/' + SCRIPTID +
 /* NOTE these names must match the 'name' attribute in HTML */
 var DEFAULT_PREFS = {
     localzone: 'default',
-    timer: ['1 hour later', '2 hours later', '3 hours later', 'One day later', 'tomorrow 8am', 'next monday 8am'],
+    timer: ['The 1st of next month at 8am', 'In 1 week', 'Tomorrow at 8am', 'One day later', 'Next monday 8am'],
     run_timers_every_x_minutes: 30
 };
 

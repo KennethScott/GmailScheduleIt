@@ -3,7 +3,7 @@ var _userLabels;
 Object.defineProperty(this, 'userLabels', {
     get: function() {
         if (!_userLabels) {
-            _userLabels = Gmail.Users.Labels.list('me').labels.find(function (l) {
+            _userLabels = Gmail.Users.Labels.list('me').labels.filter(function (l) {
                 return l.type == 'user';
             });
         }
@@ -61,20 +61,28 @@ function createLabel(labelName) {
     return label;
 }
 
-function createTimerChildLabels(parentLabelName, labelNames) {
+function createTimerChildLabels(labelNames) {
+
     for (var i in labelNames) {
-        createTimerChildLabel(parentLabelName, labelNames[i]);
+        Logger.log('Creating labels: ' + labelNames[i]);
+        createTimerChildLabel(labelNames[i]);
+        createTimerChildLabel(labelNames[i]);
     }
+
+    createLabel(SCHEDULEIT_RECURRING_LABEL);
 
     return true;
 }
 
-function createTimerChildLabel(parentLabelName, labelName) {
-    createLabel(parentLabelName + '/' + labelNames);
+function createTimerChildLabel(labelName) {
+    Logger.log('Creating label: ' + labelName);
+    createLabel(SCHEDULEIT_NORESPONSE_LABEL + '/' + labelName);
+    createLabel(SCHEDULEIT_SENDLATER_LABEL + '/' + labelName);
 }
 
-function deleteTimerChildLabel(parentLabelName, labelName) {
-    deleteLabel(parentLabelName + '/' + labelName);
+function deleteTimerChildLabel(labelName) {
+    deleteLabel(SCHEDULEIT_NORESPONSE_LABEL + '/' + labelName);
+    deleteLabel(SCHEDULEIT_SENDLATER_LABEL + '/' + labelName);
 }
 
 /**

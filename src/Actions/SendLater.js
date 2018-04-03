@@ -14,6 +14,7 @@ function processSendLater(event) {
         timerLabelNames = getUserChildLabelNames(SCHEDULEIT_SENDLATER_LABEL).remove(new RegExp(exclude, "i"));
     }
     else {  // continuation run
+        Logger.log('processSendLater-event: ' + event);
         lastRun = handleTriggered(event.triggerUid);
         timerLabelNames = [lastRun.labelName];
         Logger.log("Continuation run of label: " + lastRun.labelName + " - token: " + lastRun.token);

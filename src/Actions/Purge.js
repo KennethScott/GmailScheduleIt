@@ -5,9 +5,10 @@ function processPurge(event) {
     var timerLabels = [],
         lastRun;
 
-    if (event == undefined) { // new run   
+    // Regex to find purge sugar - example: [30 days]
+    const regex = /\[(.*?)\]/g; 
 
-        const regex = /\[(.*?)\]/g; 
+    if (event == undefined) { // new run           
 
         timerLabels = getLabels().filter(function (t) {
             return regex.test(t.name);
@@ -15,10 +16,13 @@ function processPurge(event) {
 
     }
     else {  // continuation run
+        Logger.log('processPurge-event: ' + event);
         lastRun = handleTriggered(event.triggerUid);
         timerLabels = [ getLabel(lastRun.labelName) ];
         Logger.log("Continuation run of label: " + lastRun.labelName);
     }
+
+    Logger.log(timerLabels.length);
 
     timerLabels.forEach(function (l) {
 
@@ -27,13 +31,17 @@ function processPurge(event) {
             var timerLabelName = l.name;
 
             var timerSugar = regex.exec(timerLabelName)[1];
+
+            // Make *sure* you reset the lastIndex of the regex after calling exec (if inside a loop) or you will regret it
+            regex.lastIndex = 0;
+
             Logger.log('Sugar: ' + timerSugar);
 
             if (timerSugar != undefined && timerSugar.indexOf('TIMER_ERROR_PREFIX') != 0) {
 
                 var today = new Date();
 
-                var beforeDate = today.rewind(timerSugar, false);
+                var beforeDate = new Date(today).rewind(timerSugar, false);
 
                 if (beforeDate.toString() == "Invalid Date" || beforeDate.is(today)) {
                     throw new GSCHED.SugarException("Error processing label: " + timerSugar + ". Messages for this label are not being processed.");

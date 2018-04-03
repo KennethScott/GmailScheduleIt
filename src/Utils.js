@@ -5,10 +5,11 @@ function getTimeZoneString() {
 
     Logger.log('User timezone:' + timezone_string);
 
-    if (timezone_string == DEFAULT_TIMEZONE) {
-        timezone_string = CalendarApp.getDefaultCalendar().getTimeZone();
-        Logger.log('Loading timezone from calendar: ' + timezone_string);
-    }
+    // User can just set it.. no need requiring calendar permission just for this...
+    //if (timezone_string == DEFAULT_TIMEZONE) {
+    //    timezone_string = CalendarxApp.getDefaultCalendar().getTimeZone();
+    //    Logger.log('Loading timezone from calendar: ' + timezone_string);
+    //}
 
     return timezone_string;
 }
