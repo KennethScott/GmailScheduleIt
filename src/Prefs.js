@@ -41,7 +41,7 @@ function savePrefsFromForm(form_object) {
     return 'Saved new preferences.';
 }
 
-function loadPrefsForForm() {
+function loadPrefsForForm() {       
     prefs = UserProperties.getProperties();
 
     var timerLabels = getSugars(SCHEDULEIT_NORESPONSE_LABEL);
@@ -49,7 +49,7 @@ function loadPrefsForForm() {
     Logger.log('loadPrefsForForm-timerLabels: ' + timerLabels);
 
     if (timerLabels.length) {
-        prefs['timer'] = timerLabels;
+        prefs['timer'] = JSON.stringify(timerLabels);
     }
 
     //var noResponseTimerLabels = getSugars(SCHEDULEIT_NORESPONSE_LABEL);
@@ -92,6 +92,14 @@ function clearPreferences(form_object) {
 
     //TODO Can I refresh page automatically?
     return 'Defaults restored. Please refresh page.';
+}
+
+/**
+ * Determine if preference property exists
+ * @param {any} id
+ */
+function preferenceExists(id) {
+    return !!PropertiesService.getScriptProperties().getProperty(id);
 }
 
 function setTimeZone(timezone) {

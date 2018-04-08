@@ -5,7 +5,7 @@ function processSnoozed(event) {
 	var timerLabelNames = [],
 	lastRun;
 
-	if (event == undefined) { // new run   
+    if (event == undefined || !preferenceExists(event.triggerUid)) { // new run.. if you know a better way to check, let me know...           
 		// skip labels marked as error
 		timerLabelNames = getUserChildLabelNames(SCHEDULEIT_SNOOZE_LABEL).remove(new RegExp("\/" + TIMER_ERROR_PREFIX, "i"));
 	}
@@ -15,9 +15,11 @@ function processSnoozed(event) {
 		Logger.log("Continuation run of label: " + lastRun.labelName + " - before epoch: " + lastRun.epoch);
 	}
 
-	timerLabelNames.forEach(function (timerLabelName) {
+	timerLabelNames.forEach(function (l) {
 
-		try {
+        try {
+            // label name will have spaces and slashes.. convert to google-friendly format.
+            var timerLabelName = convertLabelName(l);
 
 			Logger.log('Processing label: ' + timerLabelName);
 
@@ -31,7 +33,8 @@ function processSnoozed(event) {
 				filters.push('before:' + lastRun.epoch);
 			}
 
-			var timerSugar = timerLabelName.split(/\//).pop();
+            // make sure to regex on the original user-friendly name version (not the converted google-friendly version)
+			var timerSugar = l.split(/\//).pop();
 			Logger.log('Sugar: ' + timerSugar);
 
 			var threads = GmailApp.search(filters.join(' '), 0, PAGE_SIZE);
@@ -52,12 +55,12 @@ function processSnoozed(event) {
 			// Resume again in RESUME_FREQUENCY minutes if max results returned (so we can come back later and get more)
 			if (threads.length == PAGE_SIZE) {
 				var lastThreadLastMessageEpoch = threadMessages[threadMessages.length - 1].getLastMessageDate().getTime();
-				Logger.log("Scheduling follow up job...");
+                Logger.log("Scheduling follow up job for " + l);   // again making sure to use the user-friendly label name
 				var trigger = ScriptApp.newTrigger('processSnoozed')
                     .timeBased()
                     .at(new Date((new Date()).getTime() + 1000 * 60 * RESUME_FREQUENCY))
                     .create();
-				setupTriggerArguments(trigger, { "labelName": timerLabelName, "epoch": lastThreadLastMessageEpoch }, false);
+				setupTriggerArguments(trigger, { "labelName": l, "epoch": lastThreadLastMessageEpoch }, false);
 			}
 
 		}

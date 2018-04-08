@@ -53,7 +53,7 @@
             //if timer preference then load default labels or user labels
             if (id_name == 'timer') {
 
-                var timerLabels = prefs_object[id_name];
+                var timerLabels = JSON.parse(prefs_object[id_name]);
                 addTimerLabels(timerLabels);
 
                 continue;
@@ -132,6 +132,7 @@
     function addTimerLabel(label) {
         var timerLabelDateString = document.getElementById('timerLabelDateString');
         var timerLabelInput = document.getElementById('new_timer_label');
+        
         google.script.run.withSuccessHandler(function() {
             addTimerLabelToList(label);
 

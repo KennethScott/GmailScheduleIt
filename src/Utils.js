@@ -1,4 +1,9 @@
 
+Date.prototype.getEpoch = function() {
+    // use SugarJS to get short epoch (basically getTime()/1000 rounded);
+    return this.format('{X}');
+}
+
 function getTimeZoneString() {
     var userPrefs = getUserPrefs();
     var timezone_string = userPrefs['localzone'];
@@ -26,19 +31,19 @@ function getActiveUserEmail() {
 }
 
 
-function parseDate(str) {
-    // return Date.parse(str);
-    if (dateConversionRequired(str)) {
-        return convertToUserDate(Date.future(str));
-    }
+//function parseDate(str) {
+//    // return Date.parse(str);
+//    if (dateConversionRequired(str)) {
+//        return convertToUserDate(Date.future(str));
+//    }
 
-    return Date.future(str);
-}
+//    return Date.future(str);
+//}
 
 function parseDateFormat(str) {
 
     // var date = Date.parse(str);
-    var date = Date.future(str);
+    var date = new Date().get(str);
     if (date.isValid() && date.isFuture()) {
         return convertToUserDate(date).full();
     }

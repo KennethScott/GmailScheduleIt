@@ -8,7 +8,7 @@ function processSendLater(event) {
     var timerLabelNames = [],
         lastRun;
 
-    if (event == undefined) { // new run   
+    if (event == undefined || !preferenceExists(event.triggerUid)) { // new run.. if you know a better way to check, let me know...           
         // skip labels marked as error
         var exclude = (SCHEDULEIT_SENDLATER_LABEL + "/" + TIMER_ERROR_PREFIX + "|" + SCHEDULEIT_RECURRING_LABEL).replace("/", "\/");
         timerLabelNames = getUserChildLabelNames(SCHEDULEIT_SENDLATER_LABEL).remove(new RegExp(exclude, "i"));
@@ -20,7 +20,10 @@ function processSendLater(event) {
         Logger.log("Continuation run of label: " + lastRun.labelName + " - token: " + lastRun.token);
     }
 
-    timerLabelNames.forEach(function (timerLabelName) {
+    timerLabelNames.forEach(function (l) {
+
+        // label name will have spaces and slashes.. convert to google-friendly format.
+        var timerLabelName = convertLabelName(l);
 
         var filters = ['label:' + timerLabelName];
 
@@ -37,7 +40,8 @@ function processSendLater(event) {
 
                     var draft = GmailApp.getDraft(d.id);
 
-                    var timerSugar = timerLabelName.split(/\//).pop();
+                    // make sure to regex on the original user-friendly name version (not the converted google-friendly version)
+                    var timerSugar = l.split(/\//).pop();
                     Logger.log('Sugar: ' + timerSugar);
 
                     var draftMessage = draft.getMessage();
@@ -119,12 +123,12 @@ function processSendLater(event) {
 
             if (searchResults.nextPageToken != undefined) {
                 // Resume again in RESUME_FREQUENCY minutes if max results returned (so we can come back later and get more)
-                Logger.log("Scheduling follow up job...");
+                Logger.log("Scheduling follow up job for " + l);   // again making sure to use the user-friendly label name
                 var trigger = ScriptApp.newTrigger('processSendLater')
                     .timeBased()
                     .at(new Date((new Date()).getTime() + 1000 * 60 * RESUME_FREQUENCY))
                     .create();
-                setupTriggerArguments(trigger, { "labelName": timerLabelName, "token": searchResults.nextPageToken }, false);
+                setupTriggerArguments(trigger, { "labelName": l, "token": searchResults.nextPageToken }, false);
             }
 
         }

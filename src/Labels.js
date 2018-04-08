@@ -12,6 +12,15 @@ Object.defineProperty(this, 'userLabels', {
     enumerable: true
 });
 
+/**
+ * Convert label name for search filter format
+ * @param {string} l Label Name
+ */
+function convertLabelName(l) {
+    // replace spaces and / with dashes
+    return l.toLowerCase().replace(/[\s\/]+/g, "-");
+}
+
 function getLabel(labelName) {
 
     var label = this.userLabels.find(function (l) {
@@ -19,7 +28,7 @@ function getLabel(labelName) {
     });
 
     if (!label) {
-        Logger.log('Label does not exist. Creating it.');
+        Logger.log('Label does not exist. Creating it: ' + labelName);
         label = createLabel(labelName);
     }
 
@@ -56,6 +65,7 @@ function renameLabel(oldName, newName) {
 }
 
 function createLabel(labelName) {
+    Logger.log('Creating label: ' + labelName);
     var label = Gmail.Users.Labels.create({ 'name': labelName }, 'me');
     this.userLabels.push(label);
     return label;
@@ -64,20 +74,15 @@ function createLabel(labelName) {
 function createTimerChildLabels(labelNames) {
 
     for (var i in labelNames) {
-        Logger.log('Creating labels: ' + labelNames[i]);
-        createTimerChildLabel(labelNames[i]);
         createTimerChildLabel(labelNames[i]);
     }
-
-    createLabel(SCHEDULEIT_RECURRING_LABEL);
 
     return true;
 }
 
-function createTimerChildLabel(labelName) {
-    Logger.log('Creating label: ' + labelName);
-    createLabel(SCHEDULEIT_NORESPONSE_LABEL + '/' + labelName);
-    createLabel(SCHEDULEIT_SENDLATER_LABEL + '/' + labelName);
+function createTimerChildLabel(labelName) {    
+    getLabel(SCHEDULEIT_NORESPONSE_LABEL + '/' + labelName);
+    getLabel(SCHEDULEIT_SENDLATER_LABEL + '/' + labelName);
 }
 
 function deleteTimerChildLabel(labelName) {
@@ -103,7 +108,7 @@ function getUserChildLabelNames(parentLabelName) {
     
     var childLabels = [];
     this.userLabels.forEach(function (l) {
-        if (l.name.indexOf(parentLabelName + '/') == 0) {
+        if (l.name.startsWith(parentLabelName + '/')) {
             childLabels.push(l.name);
         }
     });

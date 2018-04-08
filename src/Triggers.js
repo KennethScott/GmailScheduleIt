@@ -41,7 +41,6 @@ function createTriggers() {
         .everyDays(1)
         .create();
 
-    //processUnresponded();
 }
 
 /**

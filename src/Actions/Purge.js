@@ -2,21 +2,24 @@
 
 function processPurge(event) {
 
-    var timerLabels = [],
+    var purgeLog = [],
+        timerLabels = [],
         lastRun;
 
     // Regex to find purge sugar - example: [30 days]
     const regex = /\[(.*?)\]/g; 
 
-    if (event == undefined) { // new run           
+    if (event == undefined || !preferenceExists(event.triggerUid)) { // new run.. if you know a better way to check, let me know...           
 
         timerLabels = getLabels().filter(function (t) {
+            // Make *sure* you reset the lastIndex of the regex before each call to exec/test if inside a loop or you will regret it
+            regex.lastIndex = 0;
+
             return regex.test(t.name);
         });
 
     }
     else {  // continuation run
-        Logger.log('processPurge-event: ' + event);
         lastRun = handleTriggered(event.triggerUid);
         timerLabels = [ getLabel(lastRun.labelName) ];
         Logger.log("Continuation run of label: " + lastRun.labelName);
@@ -28,16 +31,19 @@ function processPurge(event) {
 
         try {
 
-            var timerLabelName = l.name;
+            // label name will have spaces and slashes.. convert to google-friendly format.
+            var timerLabelName = convertLabelName(l.name);
 
-            var timerSugar = regex.exec(timerLabelName)[1];
-
-            // Make *sure* you reset the lastIndex of the regex after calling exec (if inside a loop) or you will regret it
+            // Make *sure* you reset the lastIndex of the regex before each call to exec/test if inside a loop or you will regret it 
             regex.lastIndex = 0;
+
+            // make sure to regex on the original user-friendly name version (not the converted google-friendly version)
+            var timerSugar = regex.exec(l.name)[1];
 
             Logger.log('Sugar: ' + timerSugar);
 
-            if (timerSugar != undefined && timerSugar.indexOf('TIMER_ERROR_PREFIX') != 0) {
+            // temp for testing..
+            if (timerSugar != undefined && !timerSugar.startsWith(TIMER_ERROR_PREFIX)) {
 
                 var today = new Date();
 
@@ -51,7 +57,7 @@ function processPurge(event) {
                 var filters = [
                     'label:' + timerLabelName,
                     '-in:chats',
-                    'before:' + beforeDate.getTime()
+                    'before:' + beforeDate.getEpoch()
                 ];
 
                 Logger.log("Filters: " + filters.join(' '));
@@ -61,12 +67,15 @@ function processPurge(event) {
                 // Resume again in RESUME_FREQUENCY minutes if max results returned (so we can come back later and get more)
                 if (threads.length == PAGE_SIZE) {
                     Logger.log("Scheduling follow up job...");
+                    purgeLog.push("Scheduling follow up job for " + l.name);   // again making sure to use the user-friendly label name
                     var trigger = ScriptApp.newTrigger('processPurge')
                         .timeBased()
                         .at(new Date((new Date()).getTime() + 1000 * 60 * RESUME_FREQUENCY))
                         .create();
-                    setupTriggerArguments(trigger, { 'labelName': timerLabelName }, false);
+                    setupTriggerArguments(trigger, { 'labelName': l.name }, false);
                 }
+
+                var threadsToDelete = [];  // temp array to store threads to be deleted 
 
                 // Move threads/messages which meet age criteria to trash
                 Logger.log("Processing " + threads.length + " threads...");
@@ -74,7 +83,8 @@ function processPurge(event) {
                     var thread = threads[i];
 
                     if (thread.getLastMessageDate() < beforeDate) {
-                        thread.moveToTrash();
+                        threadsToDelete.push(thread);
+                        //thread.moveToTrash();
                     }
                     //  no idea why you'd want to delete individual messages of a thread...   
                     //      else {
@@ -88,6 +98,11 @@ function processPurge(event) {
                     //      }
                 }
 
+                if (threadsToDelete.length > 0) {
+                    deleteThreads(threadsToDelete);
+                }
+
+                purgeLog.push(l.name + ' : ' + threadsToDelete.length + ' threads purged');
             }
 
         }
@@ -108,5 +123,25 @@ function processPurge(event) {
         }
 
     });
+
+    // send email here
+    GmailApp.sendEmail(getActiveUserEmail(), "Purge Completed", purgeLog.join('\n'))
+
+}
+
+
+function deleteThreads(threads) {
+
+    var addLabelToThreadLimit = 100;
+
+    // addToThreads has a limit of 100 threads. Use batching.
+    if (threads.length > addLabelToThreadLimit) {
+        for (var i = 0; i < Math.ceil(threads.length / addLabelToThreadLimit); i++) {
+            pageOfThreads = threads.slice(100 * i, 100 * (i + 1));
+            GmailApp.moveThreadsToTrash(pageOfThreads);
+        }
+    } else {
+        GmailApp.moveThreadsToTrash(threads);
+    }
 
 }

@@ -19,21 +19,21 @@ function processUnresponded(event) {
     var timerLabelNames = [],
         lastRun;
 
-    if (event == undefined) { // new run
+    if (event == undefined || !preferenceExists(event.triggerUid)) { // new run.. if you know a better way to check, let me know...           
         // get sublabels, but skip labels marked as error and recurring
         timerLabelNames = getUserChildLabelNames(SCHEDULEIT_NORESPONSE_LABEL).remove(new RegExp("\/" + TIMER_ERROR_PREFIX, "i"));
     } 
     else {  // continuation run
-        Logger.log('processUnresponded-event-type: ' + typeof event);
-        Logger.log('processUnresponded-event: ' + event);
         lastRun = handleTriggered(event.triggerUid);
         timerLabelNames = [lastRun.labelName];
         Logger.log("Continuation run of label: " + lastRun.labelName + " - before epoch: " + lastRun.epoch);
     }
 
-    timerLabelNames.forEach(function (timerLabelName) {
+    timerLabelNames.forEach(function (l) {
       
         try {            
+            // label name will have spaces and slashes.. convert to google-friendly format.
+            var timerLabelName = convertLabelName(l);
 
             Logger.log('Processing label: ' + timerLabelName);
 
@@ -55,7 +55,8 @@ function processUnresponded(event) {
                 unrespondedThreads = [],
                 respondedThreads = [];
 
-            var timerSugar = timerLabelName.split(/\//).pop();
+            // make sure to regex on the original user-friendly name version (not the converted google-friendly version)
+            var timerSugar = l.split(/\//).pop();
 
             Logger.log('Processing ' + threads.length + ' threads.');
 
@@ -90,18 +91,24 @@ function processUnresponded(event) {
             // Mark unresponded in bulk.
             if (unrespondedThreads.length > 0) {
                 markUnresponded(unrespondedThreads, timerLabelName);
-                Logger.log('Updated ' + unrespondedThreads.length + ' messages.');
+                Logger.log('Updated ' + unrespondedThreads.length + ' unresponded messages.');
+            }
+
+            // Mark responded in bulk.
+            if (respondedThreads.length > 0) {
+                markUnresponded(respondedThreads, timerLabelName);
+                Logger.log('Updated ' + respondedThreads.length + ' responded messages.');
             }
 
             // Resume again in RESUME_FREQUENCY minutes if max results returned (so we can come back later and get more)
             if (threads.length == PAGE_SIZE) {
-                var lastThreadLastMessageEpoch = threadMessages[threadMessages.length - 1].getLastMessageDate().getTime();
-                Logger.log("Scheduling follow up job...");
+                var lastThreadLastMessageEpoch = threadMessages[threadMessages.length - 1].getLastMessageDate().getEpoch();
+                Logger.log("Scheduling follow up job for " + l);   // again making sure to use the user-friendly label name
                 var trigger = ScriptApp.newTrigger('processUnresponded')
                     .timeBased()
                     .at(new Date((new Date()).getTime() + 1000 * 60 * RESUME_FREQUENCY))
                     .create();
-                setupTriggerArguments(trigger, { "labelName": timerLabelName, "epoch": lastThreadLastMessageEpoch }, false);
+                setupTriggerArguments(trigger, { "labelName": l, "epoch": lastThreadLastMessageEpoch }, false);
             }
 
         }
