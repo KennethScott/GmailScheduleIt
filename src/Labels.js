@@ -2,11 +2,11 @@ var _userLabels;
 
 Object.defineProperty(this, 'userLabels', {
     get: function() {
-        if (!_userLabels) {
+        //if (!_userLabels) {
             _userLabels = Gmail.Users.Labels.list('me').labels.filter(function (l) {
                 return l.type == 'user';
             });
-        }
+        //}
         return _userLabels;
     },
     enumerable: true
@@ -15,12 +15,18 @@ Object.defineProperty(this, 'userLabels', {
 /**
  * Convert label name for search filter format
  * @param {string} l Label Name
+ * @returns {string}
  */
 function convertLabelName(l) {
     // replace spaces and / with dashes
     return l.toLowerCase().replace(/[\s\/]+/g, "-");
 }
 
+/**
+ * Get Label by name
+ * @param {any} labelName
+ * @returns {Label}
+ */
 function getLabel(labelName) {
 
     var label = this.userLabels.find(function (l) {
@@ -34,6 +40,19 @@ function getLabel(labelName) {
 
     return label;
 }
+
+/**
+ * Converts a Label to a GmailLabel
+ * @param {Label} label
+ */
+function getGmailLabel(label) {
+    return getGmailLabelByName(label.name);
+}
+
+function getGmailLabelByName(labelName) {
+    return GmailApp.getUserLabelByName(labelName);
+}
+
 
 function getLabels() {
     return this.userLabels;

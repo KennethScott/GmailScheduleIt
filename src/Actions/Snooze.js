@@ -85,7 +85,7 @@ function processSnoozed(event) {
 }
 
 function markUnsnoozed(threads, timerLabelName) {
-	var timerLabel = getLabel(timerLabelName);
+    var timerLabel = getGmailLabelByName(timerLabelName);
 	var threadLimit = 100;
 
 	// addToThreads has a limit of 100 threads. Use batching.

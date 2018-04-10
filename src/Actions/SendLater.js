@@ -66,8 +66,8 @@ function processSendLater(event) {
                         if (draftLabels.length > 1) {
 
                             var draftLabelNames = [];
-                            draftLabels.forEach(function (l) {
-                                draftLabelNames.push(l.getName());
+                            draftLabels.forEach(function (dl) {
+                                draftLabelNames.push(dl.getName());
                             });
 
                             Logger.log(draftLabelNames.join(' : '));
@@ -80,14 +80,15 @@ function processSendLater(event) {
                                         attachments: draftMessage.getAttachments(),
                                         cc: draftMessage.getCc(),
                                         bcc: draftMessage.getBcc(),
-                                        htmlBody: draftMessage.getBody()                                        
+                                        htmlBody: draftMessage.getBody()
                                     });
 
                                 // add all the labels
                                 Logger.log('Add all the labels to the new draft');
                                 draftLabels.forEach(function (la) {
-                                    newDraft.getMessage().getThread().addLabel(la);
+                                    la.addToThread(newDraft.getMessage().getThread());
                                 });
+
                             }
 
                         }
@@ -96,8 +97,8 @@ function processSendLater(event) {
                         draft.send();
 
                         // Remove the timer, add the SendLater, and mark unread so we'll see it.
-                        draftThread.addLabel(SCHEDULEIT_SENDLATER_LABEL);
-                        draftThread.removeLabel(getLabel(timerLabelName));
+                        draftThread.addLabel(getGmailLabelByName(SCHEDULEIT_SENDLATER_LABEL));
+                        draftThread.removeLabel(getGmailLabelByName(l));
                         draftThread.markUnread();
                         
                     }

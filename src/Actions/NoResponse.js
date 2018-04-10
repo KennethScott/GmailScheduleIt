@@ -90,13 +90,13 @@ function processUnresponded(event) {
 
             // Mark unresponded in bulk.
             if (unrespondedThreads.length > 0) {
-                markUnresponded(unrespondedThreads, timerLabelName);
+                markUnresponded(unrespondedThreads, l);  // making sure to pass the user-friendly label name
                 Logger.log('Updated ' + unrespondedThreads.length + ' unresponded messages.');
             }
 
             // Mark responded in bulk.
             if (respondedThreads.length > 0) {
-                markUnresponded(respondedThreads, timerLabelName);
+                markUnresponded(respondedThreads, l);   // making sure to pass the user-friendly label name
                 Logger.log('Updated ' + respondedThreads.length + ' responded messages.');
             }
 
@@ -163,8 +163,8 @@ function getEmailAddresses() {
 }
 
 function markUnresponded(threads, timerLabelName) {
-    var timerLabel = getLabel(timerLabelName);
-    var noResponselabel = getLabel(SCHEDULEIT_NORESPONSE_LABEL);
+    var timerLabel = getGmailLabelByName(timerLabelName);
+    var noResponselabel = getGmailLabelByName(SCHEDULEIT_NORESPONSE_LABEL);
     var addLabelToThreadLimit = 100;
 
     // addToThreads has a limit of 100 threads. Use batching.
@@ -185,7 +185,7 @@ function markUnresponded(threads, timerLabelName) {
 }
 
 function markResponded(threads, timerLabelName) {
-    var timerLabel = getLabel(timerLabelName);
+    var timerLabel = getGmailLabelByName(timerLabelName);
     var addLabelToThreadLimit = 100;
 
     // addToThreads has a limit of 100 threads. Use batching.
